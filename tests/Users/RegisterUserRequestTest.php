@@ -9,6 +9,16 @@ use PHPUnit\Framework\TestCase;
 
 final class RegisterUserRequestTest extends TestCase
 {
+    public function test_empty_extra_fields_encodes_as_json_object(): void
+    {
+        $request = new RegisterUserRequest(
+            mobile: '09121234567',
+            agentUniqueId: '1',
+        );
+
+        self::assertInstanceOf(\stdClass::class, $request->toArray()['extra_fields']);
+    }
+
     public function test_to_array_snake_case_for_api(): void
     {
         $request = new RegisterUserRequest(

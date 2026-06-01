@@ -11,6 +11,7 @@ use GuzzleHttp\Psr7\Response;
 use Leadora\Agents\Config;
 use Leadora\Agents\Http\Transport;
 use Leadora\Agents\Support\ApiHeaders;
+use Leadora\Agents\Support\JsonObject;
 use PHPUnit\Framework\TestCase;
 
 final class TransportTest extends TestCase
@@ -34,7 +35,7 @@ final class TransportTest extends TestCase
         $transport->request('POST', 'v1/users', [
             'mobile' => '09121234567',
             'agent_unique_id' => '42',
-            'extra_fields' => [],
+            'extra_fields' => JsonObject::map([]),
         ]);
 
         $request = $mock->getLastRequest();
@@ -43,7 +44,7 @@ final class TransportTest extends TestCase
         self::assertSame('application/json', $request->getHeaderLine('Accept'));
         self::assertSame('tok_abc.secret', $request->getHeaderLine(ApiHeaders::API_TOKEN));
         self::assertSame(
-            '{"mobile":"09121234567","agent_unique_id":"42","extra_fields":[]}',
+            '{"mobile":"09121234567","agent_unique_id":"42","extra_fields":{}}',
             (string) $request->getBody(),
         );
     }

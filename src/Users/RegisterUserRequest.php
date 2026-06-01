@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Leadora\Agents\Users;
 
+use Leadora\Agents\Support\JsonObject;
+
 final class RegisterUserRequest
 {
     /**
@@ -33,7 +35,7 @@ final class RegisterUserRequest
         $payload = [
             'mobile' => $this->mobile,
             'agent_unique_id' => $this->agentUniqueId,
-            'extra_fields' => $this->extraFields,
+            'extra_fields' => JsonObject::map($this->extraFields),
         ];
 
         if ($this->firstName !== null) {

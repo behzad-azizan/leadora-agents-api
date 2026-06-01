@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Leadora\Agents\Users;
 
+use Leadora\Agents\Support\JsonObject;
+
 final class UpdateUserRequest
 {
     /**
@@ -45,7 +47,7 @@ final class UpdateUserRequest
         }
 
         if ($this->extraFields !== null) {
-            $payload['extra_fields'] = $this->extraFields;
+            $payload['extra_fields'] = JsonObject::map($this->extraFields);
         }
 
         if ($payload === []) {
