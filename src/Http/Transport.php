@@ -7,7 +7,6 @@ namespace Leadora\Agents\Http;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\Exception\RequestException;
 use Leadora\Agents\Config;
 use Leadora\Agents\Exception\ApiException;
 use Leadora\Agents\Exception\TransportException;
@@ -26,17 +25,13 @@ final class Transport
             'base_uri' => $this->config->baseUrl.'/',
             'timeout' => $this->config->timeout,
             'http_errors' => false,
-            'headers' => [
-                'Accept' => 'application/json',
-                'Content-Type' => 'application/json',
-                ApiHeaders::API_TOKEN => $this->config->apiToken,
-            ],
         ]);
     }
 
     /**
      * @param array<string, mixed>|null $json
      * @param array<string, string> $headers
+     * @param array<string, int|string> $query
      * @return array<string, mixed>
      */
     public function request(
@@ -46,23 +41,43 @@ final class Transport
         array $headers = [],
         array $query = [],
     ): array {
-        $options = ['headers' => $headers];
+        $options = [
+            'headers' => $this->mergeHeaders($headers),
+        ];
 
         if ($query !== []) {
             $options['query'] = $query;
         }
 
         if ($json !== null) {
-            $options['json'] = $json;
+            $options['body'] = json_encode($json, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
         }
 
         try {
             $response = $this->http->request($method, ltrim($path, '/'), $options);
         } catch (GuzzleException $e) {
             throw new TransportException($e->getMessage(), 0, $e);
+        } catch (\JsonException $e) {
+            throw new TransportException('Failed to encode request body as JSON', 0, $e);
         }
 
         return $this->decode($response);
+    }
+
+    /**
+     * @param array<string, string> $extra
+     * @return array<string, string>
+     */
+    private function mergeHeaders(array $extra): array
+    {
+        return array_merge(
+            [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                ApiHeaders::API_TOKEN => $this->config->apiToken,
+            ],
+            $extra,
+        );
     }
 
     /**
